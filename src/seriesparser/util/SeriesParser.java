@@ -2,6 +2,7 @@ package seriesparser.util;
 
 import seriesparser.model.Episode;
 import seriesparser.model.Season;
+import seriesparser.model.Stream;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -82,5 +83,31 @@ public class SeriesParser {
         String seasonId = information.substring(information.indexOf(titleStartPattern) + titleStartPattern.length());
         seasonId = seasonId.substring(0, seasonId.indexOf(titleEndPattern));
         return new Season(link, seasonId, null);
+    }
+
+    public static Stream[] parseStreams(final String streamsHTML) {
+        Stream[] streams;
+        String spliterator = "<div class=\"generateInlinePlayer\">";
+        String[] streamSnippetsDirty = streamsHTML.split(spliterator);
+        ArrayList<String> snippetsList = new ArrayList<>(Arrays.asList(streamSnippetsDirty));
+        snippetsList.remove(0);
+        String[] streamSnippets = new String[snippetsList.size()];
+        for (int i = 0; i < streamSnippets.length; i++) {
+            streamSnippets[i] = snippetsList.get(i);
+        }
+        streams = new Stream[streamSnippets.length];
+        String pathStartPattern = "href=\"";
+        String pathEndPattern = "\"";
+        String hosterStartPattern = "<h4>";
+        String hosterEndPattern = "</h4>";
+        String path, hoster;
+        for (int i = 0; i < streams.length; i++) {
+            path = streamSnippets[i].substring(streamSnippets[i].indexOf(pathStartPattern) + pathStartPattern.length());
+            path = path.substring(0, path.indexOf(pathEndPattern));
+            hoster = streamSnippets[i].substring(streamSnippets[i].indexOf(hosterStartPattern) + hosterStartPattern.length());
+            hoster = hoster.substring(0, hoster.indexOf(hosterEndPattern));
+            streams[i] = new Stream(path, hoster);
+        }
+        return streams;
     }
 }

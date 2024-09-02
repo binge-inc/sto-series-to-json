@@ -21,10 +21,10 @@ public class HTMLDownloader {
             return null;
         }
         if (lastPath == null) {
-            fullHtml = parser.util.HTMLDownloader.getHTML("http://" + ip + path);
+            fullHtml = parser.util.HTMLDownloader.getHTML("http://" + ip + path, false);
         } else {
             if (!path.equals(lastPath)) {
-                fullHtml = parser.util.HTMLDownloader.getHTML("http://" + ip + path);
+                fullHtml = parser.util.HTMLDownloader.getHTML("http://" + ip + path, false);
             }
         }
         lastPath = path;
@@ -41,15 +41,24 @@ public class HTMLDownloader {
     }
 
     public String downloadEpisodesHTML(final String path) {
-        // ToDo
         String currentEpisodesHTML = downloadHTML(path);
         String episodesStartPattern = "</thead>";
         String episodesEndPattern = "</tbody>";
-        currentEpisodesHTML = currentEpisodesHTML.substring((currentEpisodesHTML.indexOf(episodesStartPattern) + episodesStartPattern.length()), currentEpisodesHTML.indexOf(episodesEndPattern));
+        currentEpisodesHTML = currentEpisodesHTML.substring((currentEpisodesHTML.indexOf(episodesStartPattern) + episodesStartPattern.length()));
+        currentEpisodesHTML = currentEpisodesHTML.substring(0, currentEpisodesHTML.indexOf(episodesEndPattern));
         return currentEpisodesHTML;
     }
 
     public String getIp() {
         return ip;
+    }
+
+    public String downloadStreamsHTML(final String path) {
+        String streamsHTML = downloadHTML(path);
+        String streamsStartPattern = "<div class=\"hosterSiteVideo\">";
+        String streamsEndPattern = "<div class=\"cf\"></div>";
+        streamsHTML = streamsHTML.substring((streamsHTML.indexOf(streamsStartPattern) + streamsStartPattern.length()));
+        streamsHTML = streamsHTML.substring(0, streamsHTML.indexOf(streamsEndPattern));
+        return streamsHTML;
     }
 }
