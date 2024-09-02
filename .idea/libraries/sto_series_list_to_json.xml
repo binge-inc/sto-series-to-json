@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="sto-series-list-to-json">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/sto-series-list-to-json.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
