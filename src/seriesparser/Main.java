@@ -17,8 +17,12 @@ public class Main {
         boolean showProgress = ParserOptions.getShowProgress(args);
         String listDirectory = "./list-json/";
         String outputDirectory = "./json/";
+        File d = new File(outputDirectory);
+        if (!d.exists()) d.mkdir();
+        String currentJSON;
+        File f;
         HTMLDownloader hd = new HTMLDownloader(ip);
-        SeriesListDownloader.loadListJSONs(hd, listDirectory); // ToDo: Uncomment to get fresh list. This will
+        SeriesListDownloader.loadListJSONs(hd, listDirectory);
         File seriesListFile = new File(listDirectory + "series.json");
         Series[] series = null;
         Gson gson = new Gson();
@@ -28,7 +32,7 @@ public class Main {
             series = new Series[allSeries.length];
             int seriesAmountDigits = StringAnalyzer.getDigits(series.length);
             String seasonsHTML, descrHTML, descr;
-            for (int i = 0; i < series.length; i++) { // iterate over all series // ToDo: Change 1 back to series.length
+            for (int i = 0; i < series.length; i++) { // iterate over all series
                 seasonsHTML = hd.downloadSeasonsHTML(allSeries[i].getUrl());
                 Season[] seasons = SeriesParser.parseSeasons(seasonsHTML);
                 descrHTML = hd.downloadSeriesDescriptionHTML(allSeries[i].getUrl());
@@ -50,24 +54,18 @@ public class Main {
                     seasons[j].setEpisodes(episodes);
                 }
                 series[i] = new Series(allSeries[i].getUrl(), allSeries[i].getName(), descr, seasons);
+                currentJSON = gson.toJson(series[i]);
+                f = new File(outputDirectory + StringAnalyzer.getSeriesIdFromPath(series[i].getPath()) + ".json");
+                try {
+                    FileUtils.writeStringToFile(f, currentJSON, "UTF-8");
+                } catch (final IOException e) {
+                    throw new RuntimeException(e);
+                }
             }
         }
         if (series == null) {
-            System.err.println("series may not be null. Aborting save."); // ToDo
+            System.err.println("series may not be null. Aborting save.");
             return;
-        }
-        File d = new File(outputDirectory);
-        if (!d.exists()) d.mkdir();
-        String currentJSON;
-        for (final Series s : series) {
-            if (s == null) continue;
-            currentJSON = gson.toJson(s);
-            File f = new File(outputDirectory + StringAnalyzer.getSeriesIdFromPath(s.getPath()) + ".json");
-            try {
-                FileUtils.writeStringToFile(f, currentJSON, "UTF-8");
-            } catch (final IOException e) {
-                throw new RuntimeException(e);
-            }
         }
     }
 }
