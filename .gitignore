@@ -1,0 +1,8 @@
+### IntelliJ IDEA ###
+out/
+.idea/codeStyles/
+.idea/inspectionProfiles/
+.idea/shelf/
+.idea/.gitignore
+.idea/uiDesigner.xml
+.idea/workspace.xml
