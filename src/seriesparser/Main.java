@@ -18,7 +18,7 @@ public class Main {
         String listDirectory = "./list-json/";
         String outputDirectory = "./json/";
         HTMLDownloader hd = new HTMLDownloader(ip);
-        // SeriesListDownloader.loadListJSONs(hd, listDirectory); // ToDo: Uncomment to get fresh list. This will
+        SeriesListDownloader.loadListJSONs(hd, listDirectory); // ToDo: Uncomment to get fresh list. This will
         File seriesListFile = new File(listDirectory + "series.json");
         Series[] series = null;
         Gson gson = new Gson();
@@ -27,10 +27,12 @@ public class Main {
             parser.model.Series[] allSeries = gson.fromJson(listContent, parser.model.Series[].class);
             series = new Series[allSeries.length];
             int seriesAmountDigits = StringAnalyzer.getDigits(series.length);
-            String seasonsHTML;
-            for (int i = 0; i < 1; i++) { // iterate over all series // ToDo: Change 1 back to series.length
+            String seasonsHTML, descrHTML, descr;
+            for (int i = 0; i < series.length; i++) { // iterate over all series // ToDo: Change 1 back to series.length
                 seasonsHTML = hd.downloadSeasonsHTML(allSeries[i].getUrl());
                 Season[] seasons = SeriesParser.parseSeasons(seasonsHTML);
+                descrHTML = hd.downloadSeriesDescriptionHTML(allSeries[i].getUrl());
+                descr = SeriesParser.parseSeriesDescription(descrHTML);
                 if (showProgress) System.out.println("Parsing series " + StringFunctions.leftPadZero((i + 1), seriesAmountDigits) + "/" + series.length + ": \"" + allSeries[i].getName() + "\"");
                 String episodesHTML;
                 for (int j = 0; j < seasons.length; j++) {
@@ -41,13 +43,13 @@ public class Main {
                     for (int k = 0; k < episodes.length; k++) {
                         if (episodes[k] == null) continue; // Skip if streams could not be parsed for some reason
                         streamsHTML = hd.downloadStreamsHTML(episodes[k].getPath());
-                        descriptionHTML = hd.downloadDescriptionHTML(episodes[k].getPath());
+                        descriptionHTML = hd.downloadEpisodeDescriptionHTML(episodes[k].getPath());
                         episodes[k].setStreams(SeriesParser.parseStreams(streamsHTML));
-                        episodes[k].setDescr(SeriesParser.parseDescription(descriptionHTML));
+                        episodes[k].setDescr(SeriesParser.parseEpisodeDescription(descriptionHTML));
                     }
                     seasons[j].setEpisodes(episodes);
                 }
-                series[i] = new Series(allSeries[i].getUrl(), allSeries[i].getName(), seasons);
+                series[i] = new Series(allSeries[i].getUrl(), allSeries[i].getName(), descr, seasons);
             }
         }
         if (series == null) {

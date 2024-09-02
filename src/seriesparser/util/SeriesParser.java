@@ -52,9 +52,9 @@ public class SeriesParser {
 
     /*
         This works because the downloader prepares a perfectly cut snippet by chance.
-     */
-    public static String parseDescription(final String descriptionHtml) {
-        return descriptionHtml;
+    */
+    public static String parseEpisodeDescription(final String episodeDescriptionHtml) {
+        return episodeDescriptionHtml;
     }
 
     public static Season[] parseSeasons(final String seasonsHTML) {
@@ -111,5 +111,12 @@ public class SeriesParser {
             streams[i] = new Stream(path, hoster);
         }
         return streams;
+    }
+
+    /*
+        This works because the downloader prepares a perfectly cut snippet by chance.
+    */
+    public static String parseSeriesDescription(final String seriesDescriptionHTML) {
+        return seriesDescriptionHTML;
     }
 }

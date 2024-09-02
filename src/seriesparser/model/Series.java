@@ -3,11 +3,13 @@ package seriesparser.model;
 public class Series {
     private String path;
     private String name;
+    private String descr;
     private Season[] seasons;
 
-    public Series(final String path, final String name, final Season[] seasons) {
+    public Series(final String path, final String name, final String descr, final Season[] seasons) {
         this.path = path;
         this.name = name;
+        this.descr = descr;
         this.seasons = seasons;
     }
 
@@ -25,6 +27,14 @@ public class Series {
 
     public void setName(final String name) {
         this.name = name;
+    }
+
+    public String getDescr() {
+        return descr;
+    }
+
+    public void setDescr(final String descr) {
+        this.descr = descr;
     }
 
     public Season[] getSeasons() {
