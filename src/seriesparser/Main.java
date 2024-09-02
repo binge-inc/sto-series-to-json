@@ -23,7 +23,7 @@ public class Main {
             parser.model.Series[] allSeries = new Gson().fromJson(listContent, parser.model.Series[].class);
             series = new Series[allSeries.length];
             String seasonsHTML, episodesHTML;
-            for (int i = 0; i < allSeries.length; i++) { // iterate over all series
+            for (int i = 0; i < series.length; i++) { // iterate over all series
                 seasonsHTML = hd.downloadSeasonsHTML(allSeries[i].getUrl());
                 Season[] seasons = SeriesParser.parseSeasons(seasonsHTML);
                 for (int j = 0; j < seasons.length; j++) {
