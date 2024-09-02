@@ -61,4 +61,13 @@ public class HTMLDownloader {
         streamsHTML = streamsHTML.substring(0, streamsHTML.indexOf(streamsEndPattern));
         return streamsHTML;
     }
+
+    public String downloadDescriptionHTML(final String path) {
+        String descriptionHTML = downloadHTML(path);
+        String descrStartPattern = "<p class=\"descriptionSpoiler\" itemprop=\"description\">";
+        String descrEndPattern = "</p>";
+        descriptionHTML = descriptionHTML.substring((descriptionHTML.indexOf(descrStartPattern) + descrStartPattern.length()));
+        descriptionHTML = descriptionHTML.substring(0, descriptionHTML.indexOf(descrEndPattern));
+        return descriptionHTML;
+    }
 }

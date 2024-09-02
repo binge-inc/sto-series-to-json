@@ -10,9 +10,11 @@ import java.io.IOException;
 
 public class Main {
     public static final String DEFAULT_IP = "186.2.175.5";
+    public static final boolean DEFAULT_SHOW_PROGRESS = true;
 
     public static void main(final String[] args) {
         String ip = IPHelper.getIP(args);
+        boolean showProgress = ParserOptions.getShowProgress(args);
         String listDirectory = "./list-json/";
         String outputDirectory = "./json/";
         HTMLDownloader hd = new HTMLDownloader(ip);
@@ -25,20 +27,23 @@ public class Main {
             parser.model.Series[] allSeries = gson.fromJson(listContent, parser.model.Series[].class);
             series = new Series[allSeries.length];
             int seriesAmountDigits = StringAnalyzer.getDigits(series.length);
-            String seasonsHTML, episodesHTML;
-            for (int i = 0; i < 11; i++) { // iterate over all series // ToDo: Change 1 back to series.length
+            String seasonsHTML;
+            for (int i = 0; i < 1; i++) { // iterate over all series // ToDo: Change 1 back to series.length
                 seasonsHTML = hd.downloadSeasonsHTML(allSeries[i].getUrl());
                 Season[] seasons = SeriesParser.parseSeasons(seasonsHTML);
-                System.out.println("Parsing series " + leftPadZero((i + 1), seriesAmountDigits) + "/" + series.length + ": \"" + allSeries[i].getName() + "\"");
+                if (showProgress) System.out.println("Parsing series " + StringFunctions.leftPadZero((i + 1), seriesAmountDigits) + "/" + series.length + ": \"" + allSeries[i].getName() + "\"");
+                String episodesHTML;
                 for (int j = 0; j < seasons.length; j++) {
                     episodesHTML = hd.downloadEpisodesHTML(seasons[j].getPath());
                     Episode[] episodes = SeriesParser.parseEpisodes(episodesHTML);
                     if (episodes == null) continue; // Skip if episodes could not be parsed for some reason
-                    String streamsHTML;
+                    String streamsHTML, descriptionHTML;
                     for (int k = 0; k < episodes.length; k++) {
                         if (episodes[k] == null) continue; // Skip if streams could not be parsed for some reason
                         streamsHTML = hd.downloadStreamsHTML(episodes[k].getPath());
+                        descriptionHTML = hd.downloadDescriptionHTML(episodes[k].getPath());
                         episodes[k].setStreams(SeriesParser.parseStreams(streamsHTML));
+                        episodes[k].setDescr(SeriesParser.parseDescription(descriptionHTML));
                     }
                     seasons[j].setEpisodes(episodes);
                 }
@@ -62,13 +67,5 @@ public class Main {
                 throw new RuntimeException(e);
             }
         }
-    }
-
-    private static String leftPadZero(final int inputNumber, final int seriesAmountDigits) {
-        StringBuilder output = new StringBuilder("" + inputNumber);
-        while (output.length() < seriesAmountDigits) {
-            output.insert(0, "0");
-        }
-        return output.toString();
     }
 }

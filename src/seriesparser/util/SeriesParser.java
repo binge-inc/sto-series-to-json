@@ -8,14 +8,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class SeriesParser {
-    public static Episode[] parseEpisodes(final String html) {
-        // ToDo: THIS FUNCTION COULD CONTAIN A BUG THAT SHOWS EPISODES NUMBERS WRONG.
-        // Untested: When a show uses continuous numbering (instead of starting with episode 1 for each season)
-        // it could be fetched wrong. Also keep in mind, that the first episode of every season is handled differently
-        // in regard to the episodeId.
-        // ToDo: Rewrite this mess?
-        if (html == null) {
-            System.err.println("html invalid");
+    public static Episode[] parseEpisodes(final String listHtml) {
+        if (listHtml == null) {
+            System.err.println("SeriesParser.parseEpisodes(String): listHtml invalid");
             return null;
         }
         String linkStartPattern = "href=\"";
@@ -25,11 +20,11 @@ public class SeriesParser {
         String episodeNameEndPattern = "</strong>";
         String spanStartPattern = "<span>";
         String spanEndPattern = "</span>";
-        String shortenedHTML = html.substring(html.indexOf(linkStartPattern) + linkStartPattern.length());
+        String shortenedHTML = listHtml.substring(listHtml.indexOf(linkStartPattern) + linkStartPattern.length());
         String spliterator = "<meta itemprop=\"episodeNumber\"";
         String[] episodeHTMLs = shortenedHTML.split(spliterator);
-        String currentHTML, episodeLink, episodeId, name;
         Episode[] episodes = new Episode[episodeHTMLs.length];
+        String currentHTML, episodeLink, episodeId, name;
         for (int i = 0; i < episodeHTMLs.length; i++) {
             currentHTML = episodeHTMLs[i].substring(episodeHTMLs[i].indexOf(linkStartPattern) + linkStartPattern.length());
             episodeLink = currentHTML.substring(0, currentHTML.indexOf(linkEndPattern));
@@ -49,10 +44,17 @@ public class SeriesParser {
                 episodeId = episodeId.substring(0, episodeId.length() - 1);
             }
             name = currentHTML.substring(currentHTML.indexOf(episodeNameStartPattern) + episodeNameStartPattern.length(), currentHTML.indexOf(episodeNameEndPattern));
-            Episode e = new Episode(episodeLink, name, episodeId, null);
+            Episode e = new Episode(episodeLink, name, (i + 1), episodeId, null, null); // ToDo epNo
             episodes[i] = e;
         }
         return episodes;
+    }
+
+    /*
+        This works because the downloader prepares a perfectly cut snippet by chance.
+     */
+    public static String parseDescription(final String descriptionHtml) {
+        return descriptionHtml;
     }
 
     public static Season[] parseSeasons(final String seasonsHTML) {
