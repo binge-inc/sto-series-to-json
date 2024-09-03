@@ -18,26 +18,29 @@ public class Main {
         String listDirectory = "./list-json/";
         String outputDirectory = "./json/";
         File d = new File(outputDirectory);
-        if (!d.exists()) d.mkdir();
+        if (!d.exists()) {
+            if (!d.mkdir()) {
+                System.err.println("Insufficient permissions: Could not create directory " + outputDirectory);
+            }
+        }
         String currentJSON;
         File f;
         HTMLDownloader hd = new HTMLDownloader(ip);
         SeriesListDownloader.loadListJSONs(hd, listDirectory);
         File seriesListFile = new File(listDirectory + "series.json");
-        Series[] series = null;
+        Series series;
         Gson gson = new Gson();
         if (seriesListFile.exists()) {
             String listContent = FileLoader.load(listDirectory + "series.json");
             parser.model.Series[] allSeries = gson.fromJson(listContent, parser.model.Series[].class);
-            series = new Series[allSeries.length];
-            int seriesAmountDigits = StringAnalyzer.getDigits(series.length);
+            int seriesAmountDigits = StringAnalyzer.getDigits(allSeries.length);
             String seasonsHTML, descrHTML, descr;
-            for (int i = 0; i < series.length; i++) { // iterate over all series
+            for (int i = 0; i < allSeries.length; i++) { // iterate over all series
                 seasonsHTML = hd.downloadSeasonsHTML(allSeries[i].getUrl());
                 Season[] seasons = SeriesParser.parseSeasons(seasonsHTML);
                 descrHTML = hd.downloadSeriesDescriptionHTML(allSeries[i].getUrl());
                 descr = SeriesParser.parseSeriesDescription(descrHTML);
-                if (showProgress) System.out.println("Parsing series " + StringFunctions.leftPadZero((i + 1), seriesAmountDigits) + "/" + series.length + ": \"" + allSeries[i].getName() + "\"");
+                if (showProgress) System.out.println("Parsing series " + StringFunctions.leftPadZero((i + 1), seriesAmountDigits) + "/" + allSeries.length + ": \"" + allSeries[i].getName() + "\"");
                 String episodesHTML;
                 for (int j = 0; j < seasons.length; j++) {
                     episodesHTML = hd.downloadEpisodesHTML(seasons[j].getPath());
@@ -53,19 +56,15 @@ public class Main {
                     }
                     seasons[j].setEpisodes(episodes);
                 }
-                series[i] = new Series(allSeries[i].getUrl(), allSeries[i].getName(), descr, seasons);
-                currentJSON = gson.toJson(series[i]);
-                f = new File(outputDirectory + StringAnalyzer.getSeriesIdFromPath(series[i].getPath()) + ".json");
+                series = new Series(allSeries[i].getUrl(), StringFunctions.sanitize(allSeries[i].getName()), descr, seasons);
+                currentJSON = gson.toJson(series);
+                f = new File(outputDirectory + StringAnalyzer.getSeriesIdFromPath(series.getPath()) + ".json");
                 try {
                     FileUtils.writeStringToFile(f, currentJSON, "UTF-8");
                 } catch (final IOException e) {
                     throw new RuntimeException(e);
                 }
             }
-        }
-        if (series == null) {
-            System.err.println("series may not be null. Aborting save.");
-            return;
         }
     }
 }
