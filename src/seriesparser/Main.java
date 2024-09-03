@@ -8,17 +8,19 @@ import seriesparser.util.*;
 import java.io.File;
 import java.io.IOException;
 
-public class Main {public static void main(final String[] args) {
+public class Main {
+    public static void main(final String[] args) {
         String ip = CLI.getIP(args);
         boolean showProgress = CLI.getShowProgress(args);
-        String listDirectory = "./list-json/";
-        String outputDirectory = "./json/";
+        boolean updateIndex = CLI.getUpdateIndex(args);
+        String listDirectory = CLI.getSeriesListJsonOutputDirectory(args);
+        String outputDirectory = CLI.getSeriesJsonOutputDirectory(args);
         File d = new File(outputDirectory);
         FileFunctions.betterMkdir(d);
         String currentJSON;
         File f;
         HTMLDownloader hd = new HTMLDownloader(ip);
-        SeriesListDownloader.loadListJSONs(hd, listDirectory);
+        if (updateIndex) SeriesListDownloader.loadListJSONs(hd, listDirectory);
         File seriesListFile = new File(listDirectory + "series.json");
         Series series;
         Gson gson = new Gson();
