@@ -42,19 +42,19 @@ public class Main {
                 descr = SeriesParser.parseSeriesDescription(descrHTML);
                 if (showProgress) System.out.println("Parsing series " + StringFunctions.leftPadZero((i + 1), seriesAmountDigits) + "/" + allSeries.length + ": \"" + allSeries[i].getName() + "\"");
                 String episodesHTML;
-                for (int j = 0; j < seasons.length; j++) {
-                    episodesHTML = hd.downloadEpisodesHTML(seasons[j].getPath());
+                for (final Season season : seasons) {
+                    episodesHTML = hd.downloadEpisodesHTML(season.getPath());
                     Episode[] episodes = SeriesParser.parseEpisodes(episodesHTML);
                     if (episodes == null) continue; // Skip if episodes could not be parsed for some reason
                     String streamsHTML, descriptionHTML;
-                    for (int k = 0; k < episodes.length; k++) {
-                        if (episodes[k] == null) continue; // Skip if streams could not be parsed for some reason
-                        streamsHTML = hd.downloadStreamsHTML(episodes[k].getPath());
-                        descriptionHTML = hd.downloadEpisodeDescriptionHTML(episodes[k].getPath());
-                        episodes[k].setStreams(SeriesParser.parseStreams(streamsHTML));
-                        episodes[k].setDescr(SeriesParser.parseEpisodeDescription(descriptionHTML));
+                    for (final Episode episode : episodes) {
+                        if (episode == null) continue; // Skip if streams could not be parsed for some reason
+                        streamsHTML = hd.downloadStreamsHTML(episode.getPath());
+                        descriptionHTML = hd.downloadEpisodeDescriptionHTML(episode.getPath());
+                        episode.setStreams(SeriesParser.parseStreams(streamsHTML));
+                        episode.setDescr(SeriesParser.parseEpisodeDescription(descriptionHTML));
                     }
-                    seasons[j].setEpisodes(episodes);
+                    season.setEpisodes(episodes);
                 }
                 series = new Series(allSeries[i].getUrl(), StringFunctions.sanitize(allSeries[i].getName()), descr, seasons);
                 currentJSON = gson.toJson(series);
