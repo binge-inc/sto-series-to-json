@@ -20,9 +20,7 @@ public class SeriesParser {
         String episodeNameEndPattern = "</strong>";
         String spanStartPattern = "<span>";
         String spanEndPattern = "</span>";
-        String shortenedHTML = listHtml.substring(listHtml.indexOf(linkStartPattern) + linkStartPattern.length());
-        String spliterator = "<meta itemprop=\"episodeNumber\"";
-        String[] episodeHTMLs = shortenedHTML.split(spliterator);
+        String[] episodeHTMLs = getEpisodeHTMLs(listHtml, linkStartPattern);
         Episode[] episodes = new Episode[episodeHTMLs.length];
         String currentHTML, episodeLink, episodeId, name;
         for (int i = 0; i < episodeHTMLs.length; i++) {
@@ -48,6 +46,27 @@ public class SeriesParser {
             episodes[i] = e;
         }
         return episodes;
+    }
+
+    /**
+     * Extracted from parseEpisodes()
+     * // ToDo: Doc
+     *
+     * @param listHtml
+     * @param linkStartPattern
+     * @return
+     */
+    private static String[] getEpisodeHTMLs(final String listHtml, final String linkStartPattern) {
+        String relevantHTML = listHtml.substring(listHtml.indexOf(linkStartPattern) + linkStartPattern.length());
+        String spliteratorMainSeriesEpisodes = "itemprop=\"episodeNumber\"";
+        String spliteratorMovies = "itemprop=\"episode\"";
+        String[] episodeHTMLs;
+        if (relevantHTML.contains(spliteratorMainSeriesEpisodes)) {
+            episodeHTMLs = relevantHTML.split(spliteratorMainSeriesEpisodes);
+        } else {
+            episodeHTMLs = relevantHTML.split(spliteratorMovies);
+        }
+        return episodeHTMLs;
     }
 
     /*
