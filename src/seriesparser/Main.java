@@ -48,7 +48,7 @@ public class Main {
                     if (episodes == null) continue; // Skip if episodes could not be parsed for some reason
                     String streamsHTML, descriptionHTML;
                     for (final Episode episode : episodes) {
-                        if (episode == null) continue; // Skip if streams could not be parsed for some reason
+                        if (episode == null) continue; // Skip if episode could not be parsed for some reason
                         streamsHTML = hd.downloadStreamsHTML(episode.getPath());
                         descriptionHTML = hd.downloadEpisodeDescriptionHTML(episode.getPath());
                         episode.setStreams(SeriesParser.parseStreams(streamsHTML));
