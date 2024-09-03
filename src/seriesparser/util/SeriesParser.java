@@ -49,7 +49,7 @@ public class SeriesParser {
     }
 
     /**
-     * Extracted from parseEpisodes()
+     * Auto-extracted from parseEpisodes(String)
      * // ToDo: Doc
      *
      * @param listHtml
@@ -67,13 +67,6 @@ public class SeriesParser {
             episodeHTMLs = relevantHTML.split(spliteratorMovies);
         }
         return episodeHTMLs;
-    }
-
-    /*
-        This works because the downloader prepares a perfectly cut snippet by chance.
-    */
-    public static String parseEpisodeDescription(final String episodeDescriptionHtml) {
-        return episodeDescriptionHtml;
     }
 
     public static Season[] parseSeasons(final String seasonsHTML) {
@@ -130,6 +123,13 @@ public class SeriesParser {
             streams[i] = new Stream(path, hoster);
         }
         return streams;
+    }
+
+    /*
+        This works because the downloader prepares a perfectly cut snippet by chance.
+    */
+    public static String parseEpisodeDescription(final String episodeDescriptionHtml) {
+        return episodeDescriptionHtml;
     }
 
     /*
