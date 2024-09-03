@@ -66,6 +66,7 @@ public class HTMLDownloader {
         String descriptionHTML = downloadHTML(path);
         String descrStartPattern = "<p class=\"descriptionSpoiler\" itemprop=\"description\">";
         String descrEndPattern = "</p>";
+        if (!descriptionHTML.contains(descrStartPattern)) return "";
         descriptionHTML = descriptionHTML.substring((descriptionHTML.indexOf(descrStartPattern) + descrStartPattern.length()));
         descriptionHTML = descriptionHTML.substring(0, descriptionHTML.indexOf(descrEndPattern));
         return descriptionHTML;
