@@ -8,21 +8,13 @@ import seriesparser.util.*;
 import java.io.File;
 import java.io.IOException;
 
-public class Main {
-    public static final String DEFAULT_IP = "186.2.175.5";
-    public static final boolean DEFAULT_SHOW_PROGRESS = true;
-
-    public static void main(final String[] args) {
-        String ip = IPHelper.getIP(args);
-        boolean showProgress = ParserOptions.getShowProgress(args);
+public class Main {public static void main(final String[] args) {
+        String ip = CLI.getIP(args);
+        boolean showProgress = CLI.getShowProgress(args);
         String listDirectory = "./list-json/";
         String outputDirectory = "./json/";
         File d = new File(outputDirectory);
-        if (!d.exists()) {
-            if (!d.mkdir()) {
-                System.err.println("Insufficient permissions: Could not create directory " + outputDirectory);
-            }
-        }
+        FileFunctions.betterMkdir(d);
         String currentJSON;
         File f;
         HTMLDownloader hd = new HTMLDownloader(ip);
@@ -31,7 +23,7 @@ public class Main {
         Series series;
         Gson gson = new Gson();
         if (seriesListFile.exists()) {
-            String listContent = FileLoader.load(listDirectory + "series.json");
+            String listContent = FileFunctions.load(listDirectory + "series.json");
             parser.model.Series[] allSeries = gson.fromJson(listContent, parser.model.Series[].class);
             int seriesAmountDigits = StringAnalyzer.getDigits(allSeries.length);
             String seasonsHTML, descrHTML, descr;
@@ -62,7 +54,7 @@ public class Main {
                 try {
                     FileUtils.writeStringToFile(f, currentJSON, "UTF-8");
                 } catch (final IOException e) {
-                    throw new RuntimeException(e);
+                    System.err.println("Could not write file " + f.getPath());
                 }
             }
         }
