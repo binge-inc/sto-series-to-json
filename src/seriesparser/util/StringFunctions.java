@@ -20,39 +20,61 @@ public class StringFunctions {
     /**
      * Replaces HTML entities (escaped & and ') with their unescaped character.
      * s.to is inconsistent with its titles. Some series already have unescaped & and ' in their names, some do not.
+     * Also turn German quotes to general quotes.
      *
      * @param input any String.
      * @return String with unescaped characters.
      */
-    public static String sanitize(final String input) {
+    public static String htmlEntitiesToASCII(final String input) {
         String output = input.replace("&amp;", "&");
         output = output.replace("&#039;", "'");
-        /*
-        output = output.replace("&apos;", "'");
         output = output.replace("&quot;", "\"");
-        output = output.replace("&lt;", "<");
-        output = output.replace("&gt;", ">");
-        output = output.replace("&nbsp;", "\u00A0\n");
-        output = output.replace("&dollar;", "$");
-        output = output.replace("&euro;", "€");
-        output = output.replace("&pound;", "£");
-        output = output.replace("&yen;", "¥");
-        output = output.replace("&plus;", "+");
-        output = output.replace("&minus;", "-");
-        output = output.replace("&times;", "×");
-        output = output.replace("&divide;", "÷");
-        output = output.replace("&equals;", "=");
-        output = output.replace("&excl;", "!");
-        output = output.replace("&quest;", "?");
-        output = output.replace("&commat;", "@");
-        output = output.replace("&num;", "#");
-        output = output.replace("&percnt;", "%");
-        output = output.replace("&copy;", "©");
-        output = output.replace("&reg;", "®");
-        output = output.replace("&trade;", "™");
-        output = output.replace("&sect;", "§");
-        output = output.replace("&para;", "¶");
-        */
+        output = output.replace("„", "\"");
+        output = output.replace("“", "\"");
+        output = output.replace("«", "\"");
+        output = output.replace("»", "\"");
+        output = output.replace("<br />\n<br />", " ");
+        output = output.replace("<br>", "");
+        output = output.replace("<br />", "");
+        output = output.replace("<br/>", "");
+        output = output.replace("</br>", "");
+        output = output.replace("\n", "");
         return output;
+    }
+
+    /**
+     * Cuts the String from the first occurrence of the sequence fromPattern (not including itself) to the first occurrence of toPattern AFTER fromPattern (not including).
+     * If any argument is null the value null is returned.
+     * If fromPattern or toPattern are empty null is returned.
+     * If the sequence fromPattern is not found in the String an empty String is returned.
+     * If the sequence toPattern is not found after the sequence fromPattern in the String an empty String is returned.
+     *
+     * @param input any String
+     * @param fromPattern the pattern to start the new string after.
+     * @param toPattern the pattern to end the new string at.
+     * @return the part of input between fromPattern and toPattern.
+     */
+    public static String cutFromTo(final String input, final String fromPattern, final String toPattern) {
+        if (input == null) {
+            System.err.println("StringFunctions.cutFromTo(String, String, String): input may not be null.");
+            return null;
+        }
+        if (fromPattern == null || toPattern == null || fromPattern.isEmpty() || toPattern.isEmpty()) {
+            System.err.println("StringFunctions.cutFromTo(String, String, String): fromPattern and toPattern may not be null.");
+            return null;
+        }
+        String relevantFromStart;
+        if (input.contains(fromPattern)) {
+            relevantFromStart = input.substring(input.indexOf(fromPattern) + fromPattern.length());
+            if (relevantFromStart.contains(toPattern)) {
+                return relevantFromStart.substring(0, relevantFromStart.indexOf(toPattern));
+            } else {
+                System.err.println("input did not contain sequence toPattern after sequence fromPattern. Returning empty String.");
+                return "";
+            }
+        } else {
+            System.err.println("input did not contain sequence fromPattern. Returning empty String.");
+            return "";
+        }
     }
 }

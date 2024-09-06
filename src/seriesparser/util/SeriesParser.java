@@ -1,8 +1,9 @@
 package seriesparser.util;
 
-import seriesparser.model.Episode;
-import seriesparser.model.Season;
-import seriesparser.model.Stream;
+import seriesparser.jsonmodel.Episode;
+import seriesparser.jsonmodel.Season;
+import seriesparser.jsonmodel.Stream;
+import seriesparser.jsonmodel.Version;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,27 +23,27 @@ public class SeriesParser {
         String spanEndPattern = "</span>";
         String[] episodeHTMLs = getEpisodeHTMLs(listHtml, linkStartPattern);
         Episode[] episodes = new Episode[episodeHTMLs.length];
-        String currentHTML, episodeLink, episodeId, name;
+        String currentHTML, episodeLink, alt, name;
         for (int i = 0; i < episodeHTMLs.length; i++) {
             currentHTML = episodeHTMLs[i].substring(episodeHTMLs[i].indexOf(linkStartPattern) + linkStartPattern.length());
             episodeLink = currentHTML.substring(0, currentHTML.indexOf(linkEndPattern));
-            episodeId = currentHTML;
-            if (episodeId.contains(episodeNameEndPattern)) {
-                episodeId = episodeId.substring(episodeId.indexOf(episodeNameEndPattern) + episodeNameEndPattern.length());
-                episodeId = episodeId.substring(0, episodeId.indexOf(episodeNumberEndPattern));
+            alt = currentHTML;
+            if (alt.contains(episodeNameEndPattern)) {
+                alt = alt.substring(alt.indexOf(episodeNameEndPattern) + episodeNameEndPattern.length());
+                alt = alt.substring(0, alt.indexOf(episodeNumberEndPattern));
             }
-            if (episodeId.contains(spanStartPattern)) {
-                episodeId = episodeId.substring(episodeId.indexOf(spanStartPattern) + spanStartPattern.length());
-                episodeId = episodeId.substring(0, episodeId.indexOf(spanEndPattern));
+            if (alt.contains(spanStartPattern)) {
+                alt = alt.substring(alt.indexOf(spanStartPattern) + spanStartPattern.length());
+                alt = alt.substring(0, alt.indexOf(spanEndPattern));
             }
-            while (episodeId.startsWith(" ")) {
-                episodeId = episodeId.substring(1);
+            while (alt.startsWith(" ")) {
+                alt = alt.substring(1);
             }
-            while (episodeId.endsWith(" ")) {
-                episodeId = episodeId.substring(0, episodeId.length() - 1);
+            while (alt.endsWith(" ")) {
+                alt = alt.substring(0, alt.length() - 1);
             }
             name = currentHTML.substring(currentHTML.indexOf(episodeNameStartPattern) + episodeNameStartPattern.length(), currentHTML.indexOf(episodeNameEndPattern));
-            Episode e = new Episode(episodeLink, name, (i + 1), episodeId, null, null); // ToDo epNo
+            Episode e = new Episode(episodeLink, name, (i + 1), StringFunctions.htmlEntitiesToASCII(alt), null, null); // ToDo epNo continous?
             episodes[i] = e;
         }
         return episodes;
@@ -125,17 +126,27 @@ public class SeriesParser {
         return streams;
     }
 
-    /*
-        This works because the downloader prepares a perfectly cut snippet by chance.
-    */
     public static String parseEpisodeDescription(final String episodeDescriptionHtml) {
-        return episodeDescriptionHtml;
+        return StringFunctions.htmlEntitiesToASCII(episodeDescriptionHtml);
     }
 
-    /*
-        This works because the downloader prepares a perfectly cut snippet by chance.
-    */
     public static String parseSeriesDescription(final String seriesDescriptionHTML) {
-        return seriesDescriptionHTML;
+        return StringFunctions.htmlEntitiesToASCII(seriesDescriptionHTML);
+    }
+
+    public static Version[] parseVersions(final String[] versionHTMLs) {
+        // ToDo: Implement for real.
+        // This is "pls just keep working for the default version while we implement this" code.
+        Version[] versions = new Version[versionHTMLs.length];
+        Stream[] streams;
+        for (int i = 0; i < versionHTMLs.length; i++) {
+            if (versionHTMLs[i] == null || versionHTMLs[i].isEmpty()) {
+                versions[i] = null;
+            } else {
+                streams = parseStreams(versionHTMLs[i]); // versionsHTMLs[i] is streamsHTML
+                versions[i] = new Version("default", streams); // ToDo: Change name
+            }
+        }
+        return versions;
     }
 }

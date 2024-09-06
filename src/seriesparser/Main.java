@@ -2,7 +2,7 @@ package seriesparser;
 
 import com.google.gson.Gson;
 import org.apache.commons.io.FileUtils;
-import seriesparser.model.*;
+import seriesparser.jsonmodel.*;
 import seriesparser.util.*;
 
 import java.io.File;
@@ -40,17 +40,18 @@ public class Main {
                     episodesHTML = hd.downloadEpisodesHTML(season.getPath());
                     Episode[] episodes = SeriesParser.parseEpisodes(episodesHTML);
                     if (episodes == null) continue; // Skip if episodes could not be parsed for some reason
-                    String streamsHTML, descriptionHTML;
+                    String descriptionHTML;
+                    String[] versionHTMLs;
                     for (final Episode episode : episodes) {
                         if (episode == null) continue; // Skip if episode could not be parsed for some reason
-                        streamsHTML = hd.downloadStreamsHTML(episode.getPath());
+                        versionHTMLs = hd.downloadVersionHTMLs(episode.getPath());
                         descriptionHTML = hd.downloadEpisodeDescriptionHTML(episode.getPath());
-                        episode.setStreams(SeriesParser.parseStreams(streamsHTML));
+                        episode.setVersions(SeriesParser.parseVersions(versionHTMLs));
                         episode.setDescr(SeriesParser.parseEpisodeDescription(descriptionHTML));
                     }
                     season.setEpisodes(episodes);
                 }
-                series = new Series(allSeries[i].getUrl(), StringFunctions.sanitize(allSeries[i].getName()), descr, seasons);
+                series = new Series(allSeries[i].getUrl(), StringFunctions.htmlEntitiesToASCII(allSeries[i].getName()), descr, seasons);
                 currentJSON = gson.toJson(series);
                 f = new File(outputDirectory + StringAnalyzer.getSeriesIdFromPath(series.getPath()) + ".json");
                 try {
@@ -59,6 +60,7 @@ public class Main {
                     System.err.println("Could not write file " + f.getPath());
                 }
             }
+            System.out.println("Success!");
         }
     }
 }

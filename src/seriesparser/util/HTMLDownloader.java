@@ -1,5 +1,11 @@
 package seriesparser.util;
 
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
+
 /**
  * This is the class seriesparser.util.HTMLDownloader.
  * Not to be confused with parser.util.HTMLDownloader, which is used internally.
@@ -44,7 +50,7 @@ public class HTMLDownloader {
         String currentEpisodesHTML = downloadHTML(path);
         String episodesStartPattern = "</thead>";
         String episodesEndPattern = "</tbody>";
-        currentEpisodesHTML = currentEpisodesHTML.substring((currentEpisodesHTML.indexOf(episodesStartPattern) + episodesStartPattern.length()));
+        currentEpisodesHTML = currentEpisodesHTML.substring(currentEpisodesHTML.indexOf(episodesStartPattern) + episodesStartPattern.length());
         currentEpisodesHTML = currentEpisodesHTML.substring(0, currentEpisodesHTML.indexOf(episodesEndPattern));
         return currentEpisodesHTML;
     }
@@ -57,7 +63,7 @@ public class HTMLDownloader {
         String streamsHTML = downloadHTML(path);
         String streamsStartPattern = "<div class=\"hosterSiteVideo\">";
         String streamsEndPattern = "<div class=\"cf\"></div>";
-        streamsHTML = streamsHTML.substring((streamsHTML.indexOf(streamsStartPattern) + streamsStartPattern.length()));
+        streamsHTML = streamsHTML.substring(streamsHTML.indexOf(streamsStartPattern) + streamsStartPattern.length());
         streamsHTML = streamsHTML.substring(0, streamsHTML.indexOf(streamsEndPattern));
         return streamsHTML;
     }
@@ -67,7 +73,7 @@ public class HTMLDownloader {
         String descrStartPattern = "<p class=\"descriptionSpoiler\" itemprop=\"description\">";
         String descrEndPattern = "</p>";
         if (!descriptionHTML.contains(descrStartPattern)) return "";
-        descriptionHTML = descriptionHTML.substring((descriptionHTML.indexOf(descrStartPattern) + descrStartPattern.length()));
+        descriptionHTML = descriptionHTML.substring(descriptionHTML.indexOf(descrStartPattern) + descrStartPattern.length());
         descriptionHTML = descriptionHTML.substring(0, descriptionHTML.indexOf(descrEndPattern));
         return descriptionHTML;
     }
@@ -76,8 +82,19 @@ public class HTMLDownloader {
         String descriptionHTML = downloadHTML(path);
         String descrStartPattern = "data-description-type=\"review\" data-full-description=\"";
         String descrEndPattern = "\">";
-        descriptionHTML = descriptionHTML.substring((descriptionHTML.indexOf(descrStartPattern) + descrStartPattern.length()));
-        descriptionHTML = descriptionHTML.substring(0, descriptionHTML.indexOf(descrEndPattern));
-        return descriptionHTML;
+        return StringFunctions.cutFromTo(descriptionHTML, descrStartPattern, descrEndPattern);
+    }
+
+    public String[] downloadVersionHTMLs(final String path) {
+        // ToDo
+        String versionsHTML = downloadHTML(path);
+        // ToDo: parse amount of version choices and their names (e.g. gerdub, gersub, jap, ...)
+        // TEMPORARY SOLUTION!!!
+        String[] versionHTMLs = new String[2]; // ToDo: Change to actual amount
+        versionHTMLs[0] = downloadStreamsHTML(path);
+        versionHTMLs[1] = null;
+        // TEMPORARY SOLUTION
+
+        return versionHTMLs;
     }
 }
