@@ -1,10 +1,6 @@
 package seriesparser.util;
 
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
+import java.util.ArrayList;
 
 /**
  * This is the class seriesparser.util.HTMLDownloader.
@@ -59,15 +55,6 @@ public class HTMLDownloader {
         return ip;
     }
 
-    public String downloadStreamsHTML(final String path) {
-        String streamsHTML = downloadHTML(path);
-        String streamsStartPattern = "<div class=\"hosterSiteVideo\">";
-        String streamsEndPattern = "<div class=\"cf\"></div>";
-        streamsHTML = streamsHTML.substring(streamsHTML.indexOf(streamsStartPattern) + streamsStartPattern.length());
-        streamsHTML = streamsHTML.substring(0, streamsHTML.indexOf(streamsEndPattern));
-        return streamsHTML;
-    }
-
     public String downloadEpisodeDescriptionHTML(final String path) {
         String descriptionHTML = downloadHTML(path);
         String descrStartPattern = "<p class=\"descriptionSpoiler\" itemprop=\"description\">";
@@ -86,15 +73,15 @@ public class HTMLDownloader {
     }
 
     public String[] downloadVersionHTMLs(final String path) {
-        // ToDo
         String versionsHTML = downloadHTML(path);
-        // ToDo: parse amount of version choices and their names (e.g. gerdub, gersub, jap, ...)
-        // TEMPORARY SOLUTION!!!
-        String[] versionHTMLs = new String[2]; // ToDo: Change to actual amount
-        versionHTMLs[0] = downloadStreamsHTML(path);
-        versionHTMLs[1] = null;
-        // TEMPORARY SOLUTION
-
+        String firstCutStart = "<ul class=\"row\">";
+        String firstCutEnd = "</ul>";
+        String spliterator = "<span>";
+        String relevantHTML = StringFunctions.cutFromTo(versionsHTML, firstCutStart, firstCutEnd);
+        if (relevantHTML == null || relevantHTML.isEmpty()) return null;
+        String[] versionHTMLsDirty = relevantHTML.split(spliterator);
+        String[] versionHTMLs = new String[versionHTMLsDirty.length - 1];
+        System.arraycopy(versionHTMLsDirty, 0, versionHTMLs, 0, versionHTMLs.length);
         return versionHTMLs;
     }
 }

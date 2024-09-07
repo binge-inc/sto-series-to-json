@@ -21,7 +21,7 @@ public class FetchOneSeriesByExactId {
         FileFunctions.betterMkdir(d);
         System.out.println("Creating json for series \"" + seriesId + "\".");
         HTMLDownloader hd = new HTMLDownloader(ip);
-        String seasonsHTML, seriesDescrHTML, descr, episodesHTML, streamsHTML, episodeDescrHTML, path;
+        String seasonsHTML, seriesDescrHTML, descr, episodesHTML, episodeDescrHTML, path;
         String[] versionHTMLs;
         path = "/serie/stream/" + seriesId;
         seasonsHTML = hd.downloadSeasonsHTML(path);
@@ -36,12 +36,8 @@ public class FetchOneSeriesByExactId {
                 if (episode == null) continue; // Skip if episode could not be parsed for some reason
                 episodeDescrHTML = hd.downloadEpisodeDescriptionHTML(episode.getPath());
                 episode.setDescr(SeriesParser.parseEpisodeDescription(episodeDescrHTML));
-                // streamsHTML = hd.downloadStreamsHTML(episode.getPath());
-                // episode.setStreams(SeriesParser.parseStreams(streamsHTML));
                 versionHTMLs = hd.downloadVersionHTMLs(episode.getPath());
                 episode.setVersions(SeriesParser.parseVersions(versionHTMLs));
-                // ToDo: parse versions
-
             }
             season.setEpisodes(episodes);
         }

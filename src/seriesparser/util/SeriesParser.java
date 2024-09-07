@@ -100,32 +100,6 @@ public class SeriesParser {
         return new Season(link, seasonId, null);
     }
 
-    public static Stream[] parseStreams(final String streamsHTML) {
-        Stream[] streams;
-        String spliterator = "<div class=\"generateInlinePlayer\">";
-        String[] streamSnippetsDirty = streamsHTML.split(spliterator);
-        ArrayList<String> snippetsList = new ArrayList<>(Arrays.asList(streamSnippetsDirty));
-        snippetsList.remove(0);
-        String[] streamSnippets = new String[snippetsList.size()];
-        for (int i = 0; i < streamSnippets.length; i++) {
-            streamSnippets[i] = snippetsList.get(i);
-        }
-        streams = new Stream[streamSnippets.length];
-        String pathStartPattern = "href=\"";
-        String pathEndPattern = "\"";
-        String hosterStartPattern = "<h4>";
-        String hosterEndPattern = "</h4>";
-        String path, hoster;
-        for (int i = 0; i < streams.length; i++) {
-            path = streamSnippets[i].substring(streamSnippets[i].indexOf(pathStartPattern) + pathStartPattern.length());
-            path = path.substring(0, path.indexOf(pathEndPattern));
-            hoster = streamSnippets[i].substring(streamSnippets[i].indexOf(hosterStartPattern) + hosterStartPattern.length());
-            hoster = hoster.substring(0, hoster.indexOf(hosterEndPattern));
-            streams[i] = new Stream(path, hoster);
-        }
-        return streams;
-    }
-
     public static String parseEpisodeDescription(final String episodeDescriptionHtml) {
         return StringFunctions.htmlEntitiesToASCII(episodeDescriptionHtml);
     }
@@ -135,17 +109,39 @@ public class SeriesParser {
     }
 
     public static Version[] parseVersions(final String[] versionHTMLs) {
-        // ToDo: Implement for real.
-        // This is "pls just keep working for the default version while we implement this" code.
-        Version[] versions = new Version[versionHTMLs.length];
-        Stream[] streams;
+        String versionIdStart = "data-lang-key=\"";
+        String pathStartPattern = "href=\"";
+        String hosterStartPattern = "<h4>";
+        String valueEndPattern = "\"";
+        String hosterEndPattern = "</h4>";
+        ArrayList<String> uniqueDataLangKeys = new ArrayList<>();
+        String[] languageKeys = new String[versionHTMLs.length];
+        String[] paths = new String[versionHTMLs.length];
+        String[] hosters = new String[versionHTMLs.length];
         for (int i = 0; i < versionHTMLs.length; i++) {
-            if (versionHTMLs[i] == null || versionHTMLs[i].isEmpty()) {
-                versions[i] = null;
-            } else {
-                streams = parseStreams(versionHTMLs[i]); // versionsHTMLs[i] is streamsHTML
-                versions[i] = new Version("default", streams); // ToDo: Change name
+            languageKeys[i] = StringFunctions.cutFromTo(versionHTMLs[i], versionIdStart, valueEndPattern);
+            if (!uniqueDataLangKeys.contains(languageKeys[i])) {
+                uniqueDataLangKeys.add(languageKeys[i]);
             }
+            paths[i] = StringFunctions.cutFromTo(versionHTMLs[i], pathStartPattern, valueEndPattern);
+            hosters[i] = StringFunctions.cutFromTo(versionHTMLs[i], hosterStartPattern, hosterEndPattern);
+        }
+        Version[] versions = new Version[uniqueDataLangKeys.size()];
+        for (int i = 0; i < versions.length; i++) {
+            Stream[] streams;
+            int versionsCounter = 0;
+            for (int j = 0; j < languageKeys.length; j++) {
+                if (uniqueDataLangKeys.get(i).equals(languageKeys[j])) versionsCounter++;
+            }
+            streams = new Stream[versionsCounter];
+            int streamsCounter = 0;
+            for (int j = 0; j < languageKeys.length; j++) {
+                if (uniqueDataLangKeys.get(i).equals(languageKeys[j])) {
+                    streams[streamsCounter] = new Stream(paths[j], hosters[j]);
+                    streamsCounter++;
+                }
+            }
+            versions[i] = new Version(uniqueDataLangKeys.get(i), streams);
         }
         return versions;
     }
