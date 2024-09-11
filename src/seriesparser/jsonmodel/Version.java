@@ -1,20 +1,20 @@
 package seriesparser.jsonmodel;
 
 public class Version {
-    private String languageKey;
+    private int lang;
     private Stream[] streams;
 
-    public Version(final String languageKey, final Stream[] streams) {
-        this.languageKey = languageKey;
+    public Version(final int lang, final Stream[] streams) {
+        this.lang = lang;
         this.streams = streams;
     }
 
-    public String getLanguageKey() {
-        return languageKey;
+    public int getLang() {
+        return lang;
     }
 
-    public void setLanguageKey(final String languageKey) {
-        this.languageKey = languageKey;
+    public void setLang(final int lang) {
+        this.lang = lang;
     }
 
     public Stream[] getStreams() {
@@ -26,16 +26,15 @@ public class Version {
     }
 
     public String getVersionName() {
-        switch (languageKey) {
-            case "1":
+        switch (lang) {
+            case 1:
                 return "Deutsch";
-            case "2":
-                return "Unknown 2";
-            case "3":
+            case 2:
+                return "Englisch";
+            case 3:
                 return "mit deutschen Untertiteln";
-            case "4":
-                return "Unknown 4";
+            default:
+                return "Unknown languageKey: " + lang;
         }
-        return "Unknown languageKey.";
     }
 }

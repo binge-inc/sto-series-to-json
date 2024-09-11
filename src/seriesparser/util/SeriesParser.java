@@ -43,7 +43,8 @@ public class SeriesParser {
                 alt = alt.substring(0, alt.length() - 1);
             }
             name = currentHTML.substring(currentHTML.indexOf(episodeNameStartPattern) + episodeNameStartPattern.length(), currentHTML.indexOf(episodeNameEndPattern));
-            Episode e = new Episode(episodeLink, name, (i + 1), StringFunctions.htmlEntitiesToASCII(alt), null, null); // ToDo epNo continous?
+            String epId = episodeLink.substring(episodeLink.lastIndexOf("/") + 1);
+            Episode e = new Episode(epId, name, (i + 1), StringFunctions.htmlEntitiesToASCII(alt), null, null); // ToDo epNo continous?
             episodes[i] = e;
         }
         return episodes;
@@ -91,13 +92,10 @@ public class SeriesParser {
     private static Season parseSeason(final String seasonHTML) {
         String linkStartPattern = "href=\"";
         String linkEndPattern = "\"";
-        String titleStartPattern = "title=\"";
-        String titleEndPattern = "\">";
-        String information = seasonHTML.substring(seasonHTML.indexOf(linkStartPattern) + linkStartPattern.length());
-        String link = information.substring(0, information.indexOf(linkEndPattern));
-        String seasonId = information.substring(information.indexOf(titleStartPattern) + titleStartPattern.length());
-        seasonId = seasonId.substring(0, seasonId.indexOf(titleEndPattern));
-        return new Season(link, seasonId, null);
+        String relevantPart = seasonHTML.substring(seasonHTML.indexOf(linkStartPattern) + linkStartPattern.length());
+        String link = relevantPart.substring(0, relevantPart.indexOf(linkEndPattern));
+        String seasonId = link.substring(link.lastIndexOf("/") + 1);
+        return new Season(seasonId, null);
     }
 
     public static String parseEpisodeDescription(final String episodeDescriptionHtml) {
@@ -114,30 +112,35 @@ public class SeriesParser {
         String hosterStartPattern = "<h4>";
         String valueEndPattern = "\"";
         String hosterEndPattern = "</h4>";
-        ArrayList<String> uniqueDataLangKeys = new ArrayList<>();
-        String[] languageKeys = new String[versionHTMLs.length];
-        String[] paths = new String[versionHTMLs.length];
+        ArrayList<Integer> uniqueDataLangKeys = new ArrayList<>();
+        int[] languageKeys = new int[versionHTMLs.length];
+        int[] redirects = new int[versionHTMLs.length];
         String[] hosters = new String[versionHTMLs.length];
         for (int i = 0; i < versionHTMLs.length; i++) {
-            languageKeys[i] = StringFunctions.cutFromTo(versionHTMLs[i], versionIdStart, valueEndPattern);
+            String langKeyString = StringFunctions.cutFromTo(versionHTMLs[i], versionIdStart, valueEndPattern);
+            if (langKeyString == null) continue;
+            languageKeys[i] = Integer.parseInt(langKeyString);
             if (!uniqueDataLangKeys.contains(languageKeys[i])) {
                 uniqueDataLangKeys.add(languageKeys[i]);
             }
-            paths[i] = StringFunctions.cutFromTo(versionHTMLs[i], pathStartPattern, valueEndPattern);
+            String redirectString = StringFunctions.cutFromTo(versionHTMLs[i], pathStartPattern, valueEndPattern);
+            if (redirectString == null) continue;
+            redirectString = redirectString.substring(redirectString.lastIndexOf("/") + 1);
+            redirects[i] = Integer.parseInt(redirectString);
             hosters[i] = StringFunctions.cutFromTo(versionHTMLs[i], hosterStartPattern, hosterEndPattern);
         }
         Version[] versions = new Version[uniqueDataLangKeys.size()];
         for (int i = 0; i < versions.length; i++) {
             Stream[] streams;
             int versionsCounter = 0;
-            for (int j = 0; j < languageKeys.length; j++) {
-                if (uniqueDataLangKeys.get(i).equals(languageKeys[j])) versionsCounter++;
+            for (final int languageKey : languageKeys) {
+                if (uniqueDataLangKeys.get(i).equals(languageKey)) versionsCounter++;
             }
             streams = new Stream[versionsCounter];
             int streamsCounter = 0;
             for (int j = 0; j < languageKeys.length; j++) {
                 if (uniqueDataLangKeys.get(i).equals(languageKeys[j])) {
-                    streams[streamsCounter] = new Stream(paths[j], hosters[j]);
+                    streams[streamsCounter] = new Stream(redirects[j], hosters[j]);
                     streamsCounter++;
                 }
             }

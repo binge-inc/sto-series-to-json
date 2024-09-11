@@ -1,24 +1,24 @@
 package seriesparser.jsonmodel;
 
 public class Series {
-    private String path;
+    private String seriesId;
     private String name;
     private String descr;
     private Season[] seasons;
 
-    public Series(final String path, final String name, final String descr, final Season[] seasons) {
-        this.path = path;
+    public Series(final String seriesId, final String name, final String descr, final Season[] seasons) {
+        this.seriesId = seriesId;
         this.name = name;
         this.descr = descr;
         this.seasons = seasons;
     }
 
-    public String getPath() {
-        return path;
+    public String getSeriesId() {
+        return seriesId;
     }
 
-    public void setPath(final String path) {
-        this.path = path;
+    public void setSeriesId(final String seriesId) {
+        this.seriesId = seriesId;
     }
 
     public String getName() {

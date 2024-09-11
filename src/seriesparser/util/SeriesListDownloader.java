@@ -18,16 +18,20 @@ public class SeriesListDownloader {
             ArrayList<String> categories = SeriesListCutter.getCategories(importantHtml);
             Category[] parsedCategories = new Category[categories.size()];
             SeriesListParser.parseCategoryList(categories, parsedCategories);
+            /*
             String jsonRawCategorized = ConvertToJSON.categoriesToJSON(parsedCategories, false);
             SaveFiles.saveSeriesListJSON(directory, jsonRawCategorized, false, true);
             String jsonFormattedCategorized = ConvertToJSON.categoriesToJSON(parsedCategories, true);
             SaveFiles.saveSeriesListJSON(directory, jsonFormattedCategorized, true, true);
+            */
             ArrayList<Series> series = Repack.packSeriesArrayFromCategoryArray(parsedCategories);
             Series[] seriesArray = SeriesListToArray.convert(series);
             String jsonRaw = ConvertToJSON.categoriesToJSON(seriesArray, false);
             SaveFiles.saveSeriesListJSON(directory, jsonRaw, false, false);
+            /*
             String jsonFormatted = ConvertToJSON.categoriesToJSON(seriesArray, true);
             SaveFiles.saveSeriesListJSON(directory, jsonFormatted, true, false);
+            */
         }
     }
 }

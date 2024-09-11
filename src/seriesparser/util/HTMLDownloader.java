@@ -1,6 +1,6 @@
 package seriesparser.util;
 
-import java.util.ArrayList;
+import java.nio.charset.StandardCharsets;
 
 /**
  * This is the class seriesparser.util.HTMLDownloader.
@@ -10,11 +10,13 @@ public class HTMLDownloader {
     private final String ip;
     private String fullHtml;
     private String lastPath;
+    private long bytesDownloaded;
 
     public HTMLDownloader(final String ip) {
         this.ip = ip;
         fullHtml = null;
         lastPath = null;
+        bytesDownloaded = 0L;
     }
 
     public String downloadHTML(final String path) {
@@ -22,15 +24,28 @@ public class HTMLDownloader {
             System.err.println("HTMLDownloader.downloadHTML(String): path may not be null.");
             return null;
         }
-        if (lastPath == null) {
+        if (!path.equals(lastPath)) {
             fullHtml = parser.util.HTMLDownloader.getHTML("http://" + ip + path, false);
-        } else {
-            if (!path.equals(lastPath)) {
-                fullHtml = parser.util.HTMLDownloader.getHTML("http://" + ip + path, false);
-            }
+            bytesDownloaded += fullHtml.getBytes(StandardCharsets.UTF_8).length;
         }
         lastPath = path;
         return fullHtml;
+    }
+
+    /**
+     * Only used for FetchOneSeriesByExactId as it does not have access to the name field from the index json.
+     * This should
+     *
+     * @param path
+     * @return
+     */
+    public String downloadNiceName(final String path) {
+        String currentSeriesHTML = downloadHTML(path);
+        String startPattern = "<div class=\"series-title\">";
+        String endPattern = "</h1>";
+        currentSeriesHTML = currentSeriesHTML.substring(currentSeriesHTML.indexOf(startPattern) + startPattern.length());
+        currentSeriesHTML = currentSeriesHTML.substring(0, currentSeriesHTML.indexOf(endPattern));
+        return currentSeriesHTML;
     }
 
     public String downloadSeasonsHTML(final String path) {
@@ -83,5 +98,9 @@ public class HTMLDownloader {
         String[] versionHTMLs = new String[versionHTMLsDirty.length - 1];
         System.arraycopy(versionHTMLsDirty, 0, versionHTMLs, 0, versionHTMLs.length);
         return versionHTMLs;
+    }
+
+    public long getBytesDownloaded() {
+        return bytesDownloaded;
     }
 }

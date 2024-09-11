@@ -1,15 +1,15 @@
 package seriesparser.jsonmodel;
 
 public class Episode {
-    private String path;
+    private String epId;
     private String name; // usually German episode title
     private int epNo; // episode number
     private String alt; // Alternative name, usually original title or "Episode 1"
     private String descr; // description
     private Version[] versions;
 
-    public Episode(final String path, final String name, final int epNo, final String alt, final String descr, final Version[] versions) {
-        this.path = path;
+    public Episode(final String epId, final String name, final int epNo, final String alt, final String descr, final Version[] versions) {
+        this.epId = epId;
         this.name = name;
         this.epNo = epNo;
         this.alt = alt;
@@ -17,12 +17,12 @@ public class Episode {
         this.versions = versions;
     }
 
-    public String getPath() {
-        return path;
+    public String getEpId() {
+        return epId;
     }
 
-    public void setPath(final String path) {
-        this.path = path;
+    public void setEpId(final String epId) {
+        this.epId = epId;
     }
 
     public String getName() {

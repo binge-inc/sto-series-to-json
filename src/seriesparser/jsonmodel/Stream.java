@@ -1,20 +1,20 @@
 package seriesparser.jsonmodel;
 
 public class Stream {
-    private String path;
+    private int redirect;
     private String hoster;
 
-    public Stream (final String path, final String hoster) {
-        this.path = path;
+    public Stream (final int redirect, final String hoster) {
+        this.redirect = redirect;
         this.hoster = hoster;
     }
 
-    public String getPath() {
-        return path;
+    public int getRedirect() {
+        return redirect;
     }
 
-    public void setPath(final String path) {
-        this.path = path;
+    public void setRedirect(final int redirect) {
+        this.redirect = redirect;
     }
 
     public String getHoster() {

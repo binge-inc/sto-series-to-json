@@ -10,6 +10,7 @@ import java.io.IOException;
 
 public class DownloadAllJSONs {
     public static void main(final String[] args) {
+        long timeStart = System.currentTimeMillis();
         String ip = CLI.getIP(args);
         boolean showProgress = CLI.getShowProgress(args);
         boolean updateIndex = CLI.getUpdateIndex(args);
@@ -18,6 +19,7 @@ public class DownloadAllJSONs {
         File d = new File(outputDirectory);
         FileFunctions.betterMkdir(d);
         String currentJSON;
+        String basePath = "/serie/stream/";
         File f;
         HTMLDownloader hd = new HTMLDownloader(ip);
         if (updateIndex) SeriesListDownloader.loadListJSONs(hd, listDirectory);
@@ -30,30 +32,33 @@ public class DownloadAllJSONs {
             int seriesAmountDigits = StringAnalyzer.getDigits(allSeries.length);
             String seasonsHTML, descrHTML, descr;
             for (int i = 0; i < allSeries.length; i++) { // iterate over all series
-                seasonsHTML = hd.downloadSeasonsHTML(allSeries[i].getUrl());
+                String url = allSeries[i].getUrl();
+                String name = StringFunctions.htmlEntitiesToASCII(allSeries[i].getName());
+                String seriesId = url.substring(url.lastIndexOf("/") + 1);
+                seasonsHTML = hd.downloadSeasonsHTML(url);
                 Season[] seasons = SeriesParser.parseSeasons(seasonsHTML);
-                descrHTML = hd.downloadSeriesDescriptionHTML(allSeries[i].getUrl());
+                descrHTML = hd.downloadSeriesDescriptionHTML(url);
                 descr = SeriesParser.parseSeriesDescription(descrHTML);
-                if (showProgress) System.out.println("Parsing series " + StringFunctions.leftPadZero((i + 1), seriesAmountDigits) + "/" + allSeries.length + ": \"" + StringFunctions.htmlEntitiesToASCII(allSeries[i].getName()) + "\"");
+                if (showProgress) System.out.println("Parsing series " + StringFunctions.leftPadZero((i + 1), seriesAmountDigits) + "/" + allSeries.length + ": \"" + name + "\"");
                 String episodesHTML;
                 for (final Season season : seasons) {
-                    episodesHTML = hd.downloadEpisodesHTML(season.getPath());
+                    episodesHTML = hd.downloadEpisodesHTML(basePath + seriesId + "/" + season.getSeasonId());
                     Episode[] episodes = SeriesParser.parseEpisodes(episodesHTML);
                     if (episodes == null) continue; // Skip if episodes could not be parsed for some reason
                     String descriptionHTML;
                     String[] versionHTMLs;
                     for (final Episode episode : episodes) {
                         if (episode == null) continue; // Skip if episode could not be parsed for some reason
-                        versionHTMLs = hd.downloadVersionHTMLs(episode.getPath());
-                        descriptionHTML = hd.downloadEpisodeDescriptionHTML(episode.getPath());
+                        versionHTMLs = hd.downloadVersionHTMLs(basePath + seriesId + "/" + season.getSeasonId() + "/" + episode.getEpId());
+                        descriptionHTML = hd.downloadEpisodeDescriptionHTML(basePath + seriesId + "/" + season.getSeasonId() + "/" + episode.getEpId());
                         episode.setVersions(SeriesParser.parseVersions(versionHTMLs));
                         episode.setDescr(SeriesParser.parseEpisodeDescription(descriptionHTML));
                     }
                     season.setEpisodes(episodes);
                 }
-                series = new Series(allSeries[i].getUrl(), StringFunctions.htmlEntitiesToASCII(allSeries[i].getName()), descr, seasons);
+                series = new Series(seriesId, name, descr, seasons);
                 currentJSON = gson.toJson(series);
-                f = new File(outputDirectory + StringAnalyzer.getSeriesIdFromPath(series.getPath()) + ".json");
+                f = new File(outputDirectory + seriesId + ".json");
                 try {
                     FileUtils.writeStringToFile(f, currentJSON, "UTF-8");
                 } catch (final IOException e) {
@@ -62,5 +67,9 @@ public class DownloadAllJSONs {
             }
             System.out.println("Success!");
         }
+        long timeEnd = System.currentTimeMillis();
+        long timeSpent = timeEnd - timeStart;
+        System.out.println("The operation took " + timeSpent + "ms");
+        System.out.println(hd.getBytesDownloaded() + "bytes were downloaded.");
     }
 }

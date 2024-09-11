@@ -21,30 +21,35 @@ public class FetchOneSeriesByExactId {
         FileFunctions.betterMkdir(d);
         System.out.println("Creating json for series \"" + seriesId + "\".");
         HTMLDownloader hd = new HTMLDownloader(ip);
-        String seasonsHTML, seriesDescrHTML, descr, episodesHTML, episodeDescrHTML, path;
+        String nameHTML, name, seasonsHTML, seriesDescrHTML, descr, episodesHTML, episodeDescrHTML, path;
         String[] versionHTMLs;
-        path = "/serie/stream/" + seriesId;
+        String basePath = "/serie/stream/";
+        path = basePath + seriesId;
+        nameHTML = hd.downloadNiceName(path);
+        String startTitlePattern = "<span>";
+        String endTitlePattern = "</span>";
+        name = StringFunctions.cutFromTo(nameHTML, startTitlePattern, endTitlePattern);
         seasonsHTML = hd.downloadSeasonsHTML(path);
         Season[] seasons = SeriesParser.parseSeasons(seasonsHTML);
         seriesDescrHTML = hd.downloadSeriesDescriptionHTML(path);
         descr = SeriesParser.parseSeriesDescription(seriesDescrHTML);
         for (final Season season : seasons) {
-            episodesHTML = hd.downloadEpisodesHTML(season.getPath());
+            episodesHTML = hd.downloadEpisodesHTML(basePath + seriesId + "/" + season.getSeasonId());
             Episode[] episodes = SeriesParser.parseEpisodes(episodesHTML);
             if (episodes == null) continue; // Skip if episodes could not be parsed for some reason
             for (final Episode episode : episodes) {
                 if (episode == null) continue; // Skip if episode could not be parsed for some reason
-                episodeDescrHTML = hd.downloadEpisodeDescriptionHTML(episode.getPath());
+                episodeDescrHTML = hd.downloadEpisodeDescriptionHTML(basePath + seriesId + "/" + season.getSeasonId() + "/" + episode.getEpId());
                 episode.setDescr(SeriesParser.parseEpisodeDescription(episodeDescrHTML));
-                versionHTMLs = hd.downloadVersionHTMLs(episode.getPath());
+                versionHTMLs = hd.downloadVersionHTMLs(basePath + seriesId + "/" + season.getSeasonId() + "/" + episode.getEpId());
                 episode.setVersions(SeriesParser.parseVersions(versionHTMLs));
             }
             season.setEpisodes(episodes);
         }
-        Series series = new Series(path, StringAnalyzer.getSeriesIdFromPath(path), descr, seasons); // ToDo: Get clean name instead of id into second parameter
+        Series series = new Series(seriesId, name, descr, seasons);
         Gson gson = new Gson();
         String json = gson.toJson(series);
-        File f = new File(outputDirectory + StringAnalyzer.getSeriesIdFromPath(series.getPath()) + ".json");
+        File f = new File(outputDirectory + seriesId + ".json");
         try {
             FileUtils.writeStringToFile(f, json, "UTF-8");
         } catch (final IOException e) {
