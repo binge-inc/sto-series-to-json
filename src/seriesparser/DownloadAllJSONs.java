@@ -31,7 +31,7 @@ public class DownloadAllJSONs {
             parser.model.Series[] allSeries = gson.fromJson(listContent, parser.model.Series[].class);
             int seriesAmountDigits = StringAnalyzer.getDigits(allSeries.length);
             String seasonsHTML, descrHTML, descr;
-            for (int i = 6840; i < allSeries.length; i++) { // iterate over all series
+            for (int i = 0; i < allSeries.length; i++) { // iterate over all series
                 String url = allSeries[i].getUrl();
                 String name = StringFunctions.htmlEntitiesToASCII(allSeries[i].getName());
                 String seriesId = url.substring(url.lastIndexOf("/") + 1);
