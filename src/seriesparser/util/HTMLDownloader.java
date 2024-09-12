@@ -1,5 +1,6 @@
 package seriesparser.util;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 /**
@@ -25,8 +26,17 @@ public class HTMLDownloader {
             return null;
         }
         if (!path.equals(lastPath)) {
-            fullHtml = parser.util.HTMLDownloader.getHTML("http://" + ip + path, false);
-            bytesDownloaded += fullHtml.getBytes(StandardCharsets.UTF_8).length;
+            try {
+                fullHtml = parser.util.HTMLDownloader.getHTML("http://" + ip + path, false);
+                bytesDownloaded += fullHtml.getBytes(StandardCharsets.UTF_8).length;
+            } catch (final RuntimeException e) {
+                // ToDo: Handle the IOException directly in sto-series-list-to-json, where the HTMLDownloader.getHTML(String) function is implemented
+                // This is just provisional.
+                System.err.println("HTMLDownloader.downloadHTML(String): RuntimeException.\nProbably: java.io.IOException: Premature EOF");
+                System.err.println("Skipping series.");
+                // ToDo: remove whole block when getHTML is fixed.
+                return null;
+            }
         }
         lastPath = path;
         return fullHtml;
@@ -41,6 +51,7 @@ public class HTMLDownloader {
      */
     public String downloadNiceName(final String path) {
         String currentSeriesHTML = downloadHTML(path);
+        if (currentSeriesHTML == null) return null;
         String startPattern = "<div class=\"series-title\">";
         String endPattern = "</h1>";
         currentSeriesHTML = currentSeriesHTML.substring(currentSeriesHTML.indexOf(startPattern) + startPattern.length());
@@ -50,6 +61,7 @@ public class HTMLDownloader {
 
     public String downloadSeasonsHTML(final String path) {
         String currentSeriesHTML = downloadHTML(path);
+        if (currentSeriesHTML == null) return null;
         String startSeasonsPattern = "<div class=\"hosterSiteDirectNav\" id=\"stream\">";
         String endSeasonsPattern = "</ul>";
         currentSeriesHTML = currentSeriesHTML.substring(currentSeriesHTML.indexOf(startSeasonsPattern) + startSeasonsPattern.length());
@@ -59,6 +71,7 @@ public class HTMLDownloader {
 
     public String downloadEpisodesHTML(final String path) {
         String currentEpisodesHTML = downloadHTML(path);
+        if (currentEpisodesHTML == null) return null;
         String episodesStartPattern = "</thead>";
         String episodesEndPattern = "</tbody>";
         currentEpisodesHTML = currentEpisodesHTML.substring(currentEpisodesHTML.indexOf(episodesStartPattern) + episodesStartPattern.length());
@@ -72,6 +85,7 @@ public class HTMLDownloader {
 
     public String downloadEpisodeDescriptionHTML(final String path) {
         String descriptionHTML = downloadHTML(path);
+        if (descriptionHTML == null) return null;
         String descrStartPattern = "<p class=\"descriptionSpoiler\" itemprop=\"description\">";
         String descrEndPattern = "</p>";
         if (!descriptionHTML.contains(descrStartPattern)) return "";
@@ -82,6 +96,7 @@ public class HTMLDownloader {
 
     public String downloadSeriesDescriptionHTML(final String path) {
         String descriptionHTML = downloadHTML(path);
+        if (descriptionHTML == null) return null;
         String descrStartPattern = "data-description-type=\"review\" data-full-description=\"";
         String descrEndPattern = "\">";
         return StringFunctions.cutFromTo(descriptionHTML, descrStartPattern, descrEndPattern);
@@ -89,6 +104,7 @@ public class HTMLDownloader {
 
     public String[] downloadVersionHTMLs(final String path) {
         String versionsHTML = downloadHTML(path);
+        if (versionsHTML == null) return null;
         String firstCutStart = "<ul class=\"row\">";
         String firstCutEnd = "</ul>";
         String spliterator = "<span>";

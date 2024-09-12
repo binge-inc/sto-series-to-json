@@ -31,28 +31,48 @@ public class DownloadAllJSONs {
             parser.model.Series[] allSeries = gson.fromJson(listContent, parser.model.Series[].class);
             int seriesAmountDigits = StringAnalyzer.getDigits(allSeries.length);
             String seasonsHTML, descrHTML, descr;
-            for (int i = 0; i < allSeries.length; i++) { // iterate over all series
+            for (int i = 6840; i < allSeries.length; i++) { // iterate over all series
                 String url = allSeries[i].getUrl();
                 String name = StringFunctions.htmlEntitiesToASCII(allSeries[i].getName());
                 String seriesId = url.substring(url.lastIndexOf("/") + 1);
                 seasonsHTML = hd.downloadSeasonsHTML(url);
+                if (seasonsHTML == null) {
+                    System.err.println("seasonsHTML was null. Skipping.");
+                    continue;
+                }
                 Season[] seasons = SeriesParser.parseSeasons(seasonsHTML);
                 descrHTML = hd.downloadSeriesDescriptionHTML(url);
+                if (descrHTML == null) {
+                    System.err.println("descrHTML was null. Skipping.");
+                    continue;
+                }
                 descr = SeriesParser.parseSeriesDescription(descrHTML);
                 if (showProgress) System.out.println("Parsing series " + StringFunctions.leftPadZero((i + 1), seriesAmountDigits) + "/" + allSeries.length + ": \"" + name + "\"");
                 String episodesHTML;
                 for (final Season season : seasons) {
                     episodesHTML = hd.downloadEpisodesHTML(basePath + seriesId + "/" + season.getSeasonId());
+                    if (episodesHTML == null) {
+                        System.err.println("episodesHTML was null. Skipping.");
+                        continue;
+                    }
                     Episode[] episodes = SeriesParser.parseEpisodes(episodesHTML);
                     if (episodes == null) continue; // Skip if episodes could not be parsed for some reason
-                    String descriptionHTML;
+                    String epDescrHTML;
                     String[] versionHTMLs;
                     for (final Episode episode : episodes) {
                         if (episode == null) continue; // Skip if episode could not be parsed for some reason
                         versionHTMLs = hd.downloadVersionHTMLs(basePath + seriesId + "/" + season.getSeasonId() + "/" + episode.getEpId());
-                        descriptionHTML = hd.downloadEpisodeDescriptionHTML(basePath + seriesId + "/" + season.getSeasonId() + "/" + episode.getEpId());
+                        if (versionHTMLs == null) {
+                            System.err.println("versionHTMLs was null. Skipping.");
+                            continue;
+                        }
+                        epDescrHTML = hd.downloadEpisodeDescriptionHTML(basePath + seriesId + "/" + season.getSeasonId() + "/" + episode.getEpId());
+                        if (epDescrHTML == null) {
+                            System.err.println("epDescrHTML was null. Skipping.");
+                            continue;
+                        }
                         episode.setVersions(SeriesParser.parseVersions(versionHTMLs));
-                        episode.setDescr(SeriesParser.parseEpisodeDescription(descriptionHTML));
+                        episode.setDescr(SeriesParser.parseEpisodeDescription(epDescrHTML));
                     }
                     season.setEpisodes(episodes);
                 }
