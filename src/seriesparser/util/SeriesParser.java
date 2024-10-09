@@ -43,6 +43,7 @@ public class SeriesParser {
                 alt = alt.substring(0, alt.length() - 1);
             }
             name = currentHTML.substring(currentHTML.indexOf(episodeNameStartPattern) + episodeNameStartPattern.length(), currentHTML.indexOf(episodeNameEndPattern));
+            name = name.replaceAll("\u200B", "");
             String epId = episodeLink.substring(episodeLink.lastIndexOf("/") + 1);
             Episode e = new Episode(epId, name, (i + 1), StringFunctions.htmlEntitiesToASCII(alt), null, null); // ToDo epNo continous?
             episodes[i] = e;
